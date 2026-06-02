@@ -1,7 +1,7 @@
 package com.example.messagerie.web.dto;
 
 public class Dtos {
-    public record CreateUserRequest(String name) {}
+    public record CreateUserRequest(String name, String username, String password) {}
     public record IdResponse(Long id) {}
 
     public record SendFriendRequest(Long fromUserId, Long toUserId) {}
