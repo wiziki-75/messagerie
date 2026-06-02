@@ -3,7 +3,7 @@ package com.example.messagerie.web.dto;
 import jakarta.validation.constraints.NotBlank;
 
 public class Dtos {
-    public record CreateUserRequest(@NotBlank String name) {}
+    public record CreateUserRequest(String name, String username, String password) {}
     public record IdResponse(Long id) {}
 
     public record SendFriendRequest(Long fromUserId, Long toUserId) {}
