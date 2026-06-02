@@ -6,6 +6,7 @@ import com.example.messagerie.repository.MessageRepository;
 import com.example.messagerie.service.MessageService;
 import com.example.messagerie.service.UserService;
 import com.example.messagerie.web.dto.Dtos;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,33 +30,29 @@ public class MessageController {
     }
 
     @PostMapping("/send")
-    public Message send(@RequestBody Dtos.SendMessageRequest req) {
+    public Message send(@RequestBody @Valid Dtos.SendMessageRequest req) {
         Conversation conv = conversationRepository.findById(req.conversationId())
                 .orElseThrow(() -> new IllegalArgumentException("Conversation introuvable"));
         User sender = userService.require(req.senderId());
-        // determine recipient as the other participant of the conversation
         Long aId = conv.getUserA().getId();
         Long bId = conv.getUserB().getId();
-        if (!req.senderId().equals(aId) && !req.senderId().equals(bId)) {
+        if (!req.senderId().equals(aId) && !req.senderId().equals(bId))
             throw new IllegalArgumentException("L'expéditeur n'appartient pas à la conversation");
-        }
         User recipient = req.senderId().equals(aId) ? conv.getUserB() : conv.getUserA();
         return messageService.send(conv, sender, req.content(), recipient);
     }
 
-    @PostMapping("/edit")
-    public Message edit(@RequestBody Dtos.EditMessageRequest req) {
-        Message m = messageRepository.findById(req.messageId())
-                .orElseThrow(() -> new IllegalArgumentException("Message introuvable"));
+    @PatchMapping("/{id}")
+    public Message edit(@PathVariable Long id, @RequestBody @Valid Dtos.EditMessageRequest req) {
+        Message m = require(id);
         Conversation conv = m.getConversation();
         User recipient = m.getSender().getId().equals(conv.getUserA().getId()) ? conv.getUserB() : conv.getUserA();
         return messageService.edit(m, req.content(), recipient);
     }
 
-    @PostMapping("/delete")
-    public Message delete(@RequestBody Dtos.DeleteMessageRequest req) {
-        Message m = messageRepository.findById(req.messageId())
-                .orElseThrow(() -> new IllegalArgumentException("Message introuvable"));
+    @DeleteMapping("/{id}")
+    public Message delete(@PathVariable Long id) {
+        Message m = require(id);
         Conversation conv = m.getConversation();
         User recipient = m.getSender().getId().equals(conv.getUserA().getId()) ? conv.getUserB() : conv.getUserA();
         return messageService.softDelete(m, recipient);
@@ -66,5 +63,10 @@ public class MessageController {
         Conversation conv = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversation introuvable"));
         return messageService.list(conv);
+    }
+
+    private Message require(Long id) {
+        return messageRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Message introuvable"));
     }
 }

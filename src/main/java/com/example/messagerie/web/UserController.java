@@ -3,8 +3,8 @@ package com.example.messagerie.web;
 import com.example.messagerie.model.User;
 import com.example.messagerie.service.UserService;
 import com.example.messagerie.web.dto.Dtos;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -20,11 +20,18 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<Dtos.IdResponse> create(@RequestBody @Validated Dtos.CreateUserRequest req) {
+    public ResponseEntity<Dtos.IdResponse> create(@RequestBody @Valid Dtos.CreateUserRequest req) {
         User u = userService.create(req.name());
         return ResponseEntity.created(URI.create("/api/users/" + u.getId())).body(new Dtos.IdResponse(u.getId()));
     }
 
     @GetMapping
-    public List<User> list() { return userService.list(); }
+    public List<User> list() {
+        return userService.list();
+    }
+
+    @GetMapping("/{id}")
+    public User getById(@PathVariable Long id) {
+        return userService.require(id);
+    }
 }

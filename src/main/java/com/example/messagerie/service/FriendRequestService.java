@@ -24,16 +24,21 @@ public class FriendRequestService {
 
     @Transactional
     public Friendship send(User from, User to) {
-        if (from.getId().equals(to.getId())) throw new IllegalArgumentException("Impossible de s'envoyer une demande à soi-même");
-        friendshipRepository.findByFromUserAndToUser(from, to).ifPresent(f -> {
-            throw new IllegalArgumentException("Demande déjà existante");
-        });
+        if (from.getId().equals(to.getId()))
+            throw new IllegalArgumentException("Impossible de s'envoyer une demande à soi-même");
+
+        boolean exists = friendshipRepository.findByFromUserAndToUser(from, to).isPresent()
+                || friendshipRepository.findByFromUserAndToUser(to, from).isPresent();
+        if (exists)
+            throw new IllegalArgumentException("Une demande ou amitié existe déjà entre ces deux utilisateurs");
+
         Friendship f = new Friendship();
         f.setFromUser(from);
         f.setToUser(to);
         f.setStatus(FriendshipStatus.PENDING);
         Friendship saved = friendshipRepository.save(f);
-        notificationService.notify(to, NotificationType.FRIEND_REQUEST_RECEIVED, saved.getId(), "Demande d'ami de " + from.getName());
+        notificationService.notify(to, NotificationType.FRIEND_REQUEST_RECEIVED, saved.getId(),
+                "Demande d'ami de " + from.getName());
         return saved;
     }
 
@@ -42,9 +47,9 @@ public class FriendRequestService {
         req.setStatus(FriendshipStatus.ACCEPTED);
         req.setUpdatedAt(LocalDateTime.now());
         Friendship saved = friendshipRepository.save(req);
-        // create conversation when accepted
         conversationService.getOrCreate(req.getFromUser(), req.getToUser());
-        notificationService.notify(req.getFromUser(), NotificationType.FRIEND_REQUEST_ACCEPTED, saved.getId(), req.getToUser().getName() + " a accepté votre demande");
+        notificationService.notify(req.getFromUser(), NotificationType.FRIEND_REQUEST_ACCEPTED, saved.getId(),
+                req.getToUser().getName() + " a accepté votre demande");
         return saved;
     }
 
@@ -53,7 +58,8 @@ public class FriendRequestService {
         req.setStatus(FriendshipStatus.DECLINED);
         req.setUpdatedAt(LocalDateTime.now());
         Friendship saved = friendshipRepository.save(req);
-        notificationService.notify(req.getFromUser(), NotificationType.FRIEND_REQUEST_DECLINED, saved.getId(), req.getToUser().getName() + " a décliné votre demande");
+        notificationService.notify(req.getFromUser(), NotificationType.FRIEND_REQUEST_DECLINED, saved.getId(),
+                req.getToUser().getName() + " a décliné votre demande");
         return saved;
     }
 
@@ -67,5 +73,10 @@ public class FriendRequestService {
     @Transactional(readOnly = true)
     public List<Friendship> listReceived(User toUser) {
         return friendshipRepository.findByToUserAndStatus(toUser, FriendshipStatus.PENDING);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Friendship> listFriends(User user) {
+        return friendshipRepository.findAcceptedFriendships(user);
     }
 }

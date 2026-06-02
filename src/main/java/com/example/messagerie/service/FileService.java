@@ -25,7 +25,8 @@ public class FileService {
     private final NotificationService notificationService;
     private final StorageProperties storageProperties;
 
-    public FileService(FileAttachmentRepository fileRepo, NotificationService notificationService, StorageProperties storageProperties) {
+    public FileService(FileAttachmentRepository fileRepo, NotificationService notificationService,
+                       StorageProperties storageProperties) {
         this.fileRepo = fileRepo;
         this.notificationService = notificationService;
         this.storageProperties = storageProperties;
@@ -42,8 +43,7 @@ public class FileService {
         if (file == null || file.isEmpty()) throw new IllegalArgumentException("Fichier manquant");
         String original = StringUtils.cleanPath(file.getOriginalFilename() == null ? "file" : file.getOriginalFilename());
         String stored = UUID.randomUUID() + "_" + original;
-        Path root = ensureRoot();
-        Path dest = root.resolve(stored);
+        Path dest = ensureRoot().resolve(stored);
         Files.copy(file.getInputStream(), dest);
 
         FileAttachment att = new FileAttachment();
@@ -70,5 +70,12 @@ public class FileService {
     @Transactional(readOnly = true)
     public List<FileAttachment> list(Conversation conversation) {
         return fileRepo.findByConversationOrderByCreatedAtAsc(conversation);
+    }
+
+    public byte[] download(FileAttachment att) throws IOException {
+        if (att.isDeleted()) throw new IllegalArgumentException("Ce fichier a été supprimé");
+        Path file = ensureRoot().resolve(att.getStoredFilename());
+        if (!Files.exists(file)) throw new IllegalArgumentException("Fichier introuvable sur le serveur");
+        return Files.readAllBytes(file);
     }
 }

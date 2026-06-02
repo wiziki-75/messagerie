@@ -17,7 +17,9 @@ public class FriendRequestController {
     private final UserService userService;
     private final FriendshipRepository friendshipRepository;
 
-    public FriendRequestController(FriendRequestService friendRequestService, UserService userService, FriendshipRepository friendshipRepository) {
+    public FriendRequestController(FriendRequestService friendRequestService,
+                                   UserService userService,
+                                   FriendshipRepository friendshipRepository) {
         this.friendRequestService = friendRequestService;
         this.userService = userService;
         this.friendshipRepository = friendshipRepository;
@@ -30,21 +32,21 @@ public class FriendRequestController {
         return friendRequestService.send(from, to);
     }
 
-    @PostMapping("/accept")
-    public Friendship accept(@RequestBody Dtos.UpdateFriendRequest req) {
-        Friendship f = friendshipRepository.findById(req.requestId()).orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+    @PatchMapping("/{id}/accept")
+    public Friendship accept(@PathVariable Long id) {
+        Friendship f = require(id);
         return friendRequestService.accept(f);
     }
 
-    @PostMapping("/decline")
-    public Friendship decline(@RequestBody Dtos.UpdateFriendRequest req) {
-        Friendship f = friendshipRepository.findById(req.requestId()).orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+    @PatchMapping("/{id}/decline")
+    public Friendship decline(@PathVariable Long id) {
+        Friendship f = require(id);
         return friendRequestService.decline(f);
     }
 
-    @PostMapping("/cancel")
-    public Friendship cancel(@RequestBody Dtos.UpdateFriendRequest req) {
-        Friendship f = friendshipRepository.findById(req.requestId()).orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+    @DeleteMapping("/{id}")
+    public Friendship cancel(@PathVariable Long id) {
+        Friendship f = require(id);
         return friendRequestService.cancel(f);
     }
 
@@ -52,5 +54,16 @@ public class FriendRequestController {
     public List<Friendship> listReceived(@PathVariable Long userId) {
         User to = userService.require(userId);
         return friendRequestService.listReceived(to);
+    }
+
+    @GetMapping("/friends/{userId}")
+    public List<Friendship> listFriends(@PathVariable Long userId) {
+        User user = userService.require(userId);
+        return friendRequestService.listFriends(user);
+    }
+
+    private Friendship require(Long id) {
+        return friendshipRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
     }
 }

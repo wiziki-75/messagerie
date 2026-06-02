@@ -17,6 +17,9 @@ public class UserService {
 
     @Transactional
     public User create(String name) {
+        userRepository.findByName(name).ifPresent(u -> {
+            throw new IllegalArgumentException("Un utilisateur avec ce nom existe déjà");
+        });
         User u = new User();
         u.setName(name);
         return userRepository.save(u);
@@ -24,9 +27,12 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public User require(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable: " + id));
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable: " + id));
     }
 
     @Transactional(readOnly = true)
-    public List<User> list() { return userRepository.findAll(); }
+    public List<User> list() {
+        return userRepository.findAll();
+    }
 }

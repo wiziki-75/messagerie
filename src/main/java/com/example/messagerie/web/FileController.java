@@ -8,7 +8,9 @@ import com.example.messagerie.repository.FileAttachmentRepository;
 import com.example.messagerie.service.FileService;
 import com.example.messagerie.service.UserService;
 import com.example.messagerie.web.dto.Dtos;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,21 +44,29 @@ public class FileController {
         User sender = userService.require(senderId);
         Long aId = conv.getUserA().getId();
         Long bId = conv.getUserB().getId();
-        if (!senderId.equals(aId) && !senderId.equals(bId)) {
+        if (!senderId.equals(aId) && !senderId.equals(bId))
             throw new IllegalArgumentException("L'expéditeur n'appartient pas à la conversation");
-        }
         User recipient = senderId.equals(aId) ? conv.getUserB() : conv.getUserA();
         FileAttachment saved = fileService.upload(conv, sender, recipient, file);
         return new Dtos.UploadFileResponse(saved.getId(), saved.getOriginalName(), saved.getSize());
     }
 
-    @PostMapping("/delete")
-    public FileAttachment delete(@RequestBody Dtos.DeleteFileRequest req) {
-        FileAttachment att = fileAttachmentRepository.findById(req.fileId())
-                .orElseThrow(() -> new IllegalArgumentException("Fichier introuvable"));
+    @DeleteMapping("/{id}")
+    public FileAttachment delete(@PathVariable Long id) {
+        FileAttachment att = require(id);
         Conversation conv = att.getConversation();
         User recipient = att.getSender().getId().equals(conv.getUserA().getId()) ? conv.getUserB() : conv.getUserA();
         return fileService.delete(att, recipient);
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<byte[]> download(@PathVariable Long id) throws IOException {
+        FileAttachment att = require(id);
+        byte[] data = fileService.download(att);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + att.getOriginalName() + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(data);
     }
 
     @GetMapping("/conversation/{conversationId}")
@@ -64,5 +74,10 @@ public class FileController {
         Conversation conv = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversation introuvable"));
         return fileService.list(conv);
+    }
+
+    private FileAttachment require(Long id) {
+        return fileAttachmentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Fichier introuvable"));
     }
 }
