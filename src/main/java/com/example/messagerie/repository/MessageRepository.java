@@ -1,0 +1,11 @@
+package com.example.messagerie.repository;
+
+import com.example.messagerie.model.Conversation;
+import com.example.messagerie.model.Message;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface MessageRepository extends JpaRepository<Message, Long> {
+    List<Message> findByConversationOrderByCreatedAtAsc(Conversation conversation);
+}
