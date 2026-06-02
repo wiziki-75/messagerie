@@ -19,17 +19,15 @@ public class DataInitializer {
             UserService userService,
             FriendRequestService friendRequestService,
             ConversationService conversationService,
-            MessageService messageService,
-            UserRepository userRepository,
-            FriendshipRepository friendshipRepository
+            MessageService messageService
     ) {
         return args -> {
             // ── Utilisateurs ──────────────────────────────────────────────────
-            User alice   = userService.create("Alice");
-            User bob     = userService.create("Bob");
-            User charlie = userService.create("Charlie");
-            User diana   = userService.create("Diana");
-            User eve     = userService.create("Eve");
+            User alice   = userService.create("Alice",   "alice",   "password123");
+            User bob     = userService.create("Bob",     "bob",     "password123");
+            User charlie = userService.create("Charlie", "charlie", "password123");
+            User diana   = userService.create("Diana",   "diana",   "password123");
+            User eve     = userService.create("Eve",     "eve",     "password123");
 
             log.info("✅ Utilisateurs créés : Alice({}), Bob({}), Charlie({}), Diana({}), Eve({})",
                     alice.getId(), bob.getId(), charlie.getId(), diana.getId(), eve.getId());
@@ -39,10 +37,10 @@ public class DataInitializer {
             friendRequestService.accept(aliceBob);
             Conversation convAliceBob = conversationService.getOrCreate(alice, bob);
 
-            messageService.send(convAliceBob, alice, "Salut Bob, ça va ?", bob);
-            messageService.send(convAliceBob, bob,   "Super et toi ?",     alice);
+            messageService.send(convAliceBob, alice, "Salut Bob, ça va ?",            bob);
+            messageService.send(convAliceBob, bob,   "Super et toi ?",                alice);
             messageService.send(convAliceBob, alice, "Nickel ! On se voit ce soir ?", bob);
-            messageService.send(convAliceBob, bob,   "Avec plaisir 🎉",   alice);
+            messageService.send(convAliceBob, bob,   "Avec plaisir 🎉",              alice);
 
             log.info("✅ Alice ↔ Bob : amis + 4 messages");
 
@@ -51,8 +49,8 @@ public class DataInitializer {
             friendRequestService.accept(aliceCharlie);
             Conversation convAliceCharlie = conversationService.getOrCreate(alice, charlie);
 
-            messageService.send(convAliceCharlie, charlie, "Hey Alice !",               alice);
-            messageService.send(convAliceCharlie, alice,   "Coucou Charlie !",          charlie);
+            messageService.send(convAliceCharlie, charlie, "Hey Alice !",      alice);
+            messageService.send(convAliceCharlie, alice,   "Coucou Charlie !", charlie);
 
             log.info("✅ Alice ↔ Charlie : amis + 2 messages");
 
@@ -64,18 +62,12 @@ public class DataInitializer {
 
             log.info("✅ Bob ↔ Charlie : amis + 1 message");
 
-            // ── Diana → Alice : demande en attente ───────────────────────────
-            friendRequestService.send(diana, alice);
-            log.info("✅ Diana → Alice : demande en attente");
-
-            // ── Eve → Bob : demande en attente ───────────────────────────────
-            friendRequestService.send(eve, bob);
-            log.info("✅ Eve → Bob : demande en attente");
-
-            // ── Charlie → Diana : demande en attente ─────────────────────────
+            // ── Demandes en attente ───────────────────────────────────────────
+            friendRequestService.send(diana,   alice);
+            friendRequestService.send(eve,     bob);
             friendRequestService.send(charlie, diana);
-            log.info("✅ Charlie → Diana : demande en attente");
 
+            log.info("✅ Demandes en attente : Diana→Alice, Eve→Bob, Charlie→Diana");
             log.info("🚀 Données de test prêtes — ouvrez http://localhost:8080");
         };
     }

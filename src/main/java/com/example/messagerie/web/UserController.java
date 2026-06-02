@@ -20,7 +20,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<Dtos.IdResponse> create(@RequestBody @Validated Dtos.CreateUserRequest req) {
+    public ResponseEntity<Dtos.IdResponse> create(@RequestBody @Valid Dtos.CreateUserRequest req) {
         User u = userService.create(req.name(), req.username(), req.password());
         return ResponseEntity.created(URI.create("/api/users/" + u.getId())).body(new Dtos.IdResponse(u.getId()));
     }

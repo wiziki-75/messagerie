@@ -39,6 +39,12 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public User requireByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable: " + username));
+    }
+
+    @Transactional(readOnly = true)
     public List<User> list() {
         return userRepository.findAll();
     }
