@@ -1,0 +1,12 @@
+package com.example.messagerie.model;
+
+public enum NotificationType {
+    FRIEND_REQUEST_RECEIVED,
+    FRIEND_REQUEST_ACCEPTED,
+    FRIEND_REQUEST_DECLINED,
+    MESSAGE_RECEIVED,
+    MESSAGE_EDITED,
+    MESSAGE_DELETED,
+    FILE_RECEIVED,
+    FILE_DELETED
+}
