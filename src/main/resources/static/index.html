@@ -297,7 +297,7 @@
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
-const S = { user: null, auth: null, users: [], friends: [], pendingReceived: [], pendingSent: [], conversations: [], convId: null, convOther: null, pollTimer: null };
+const S = { user: null, auth: null, users: [], friends: [], pendingReceived: [], pendingSent: [], conversations: [], convId: null, convOther: null, pollTimer: null, editingMsgId: null };
 
 // ── API helpers ───────────────────────────────────────────────────────────────
 async function api(method, path, body, noAuth = false) {
@@ -556,15 +556,16 @@ function startEdit(id) {
     const inp = document.createElement('input');
     inp.className = 'edit-input'; inp.value = msgEl.dataset.content || '';
     bubble.after(inp); inp.focus();
+    S.editingMsgId = id;
     inp.onkeydown = async e => {
         if (e.key === 'Enter') await saveEdit(id, inp.value.trim());
-        if (e.key === 'Escape') { inp.remove(); bubble.style.display = ''; }
+        if (e.key === 'Escape') { S.editingMsgId = null; inp.remove(); bubble.style.display = ''; }
     };
 }
 
 async function saveEdit(id, content) {
     if (!content) { toast('Le contenu ne peut pas être vide', 'error'); return; }
-    try { await PATCH(`/api/messages/${id}`, { content }); await loadMessages(); toast('Message modifié', 'success'); }
+    try { S.editingMsgId = null; await PATCH(`/api/messages/${id}`, { content }); await loadMessages(); toast('Message modifié', 'success'); }
     catch(e) { toast(e.message, 'error'); }
 }
 
@@ -680,7 +681,7 @@ function startPoll() {
     clearPoll();
     S.pollTimer = setInterval(async () => {
         await loadNotifications();
-        if (S.convId) await loadMessages();
+        if (S.convId && !S.editingMsgId) await loadMessages();
     }, 3000);
 }
 function clearPoll() { if (S.pollTimer) { clearInterval(S.pollTimer); S.pollTimer = null; } }
