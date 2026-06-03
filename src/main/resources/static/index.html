@@ -456,6 +456,15 @@ function renderAddFriendSelect() {
     });
 }
 
+async function generateCode() {
+    try {
+        const res = await POST('/api/invitations/generate');
+        document.getElementById('invite-code-display').textContent = res.code;
+        document.getElementById('invite-code-box').style.display = 'block';
+        toast('Code généré !', 'success');
+    } catch(e) { toast(e.message, 'error'); }
+}
+
 function copyInviteCode() {
     const code = document.getElementById('invite-code-display').textContent;
     navigator.clipboard.writeText(code).then(() => toast('Code copié !', 'success'));
@@ -708,7 +717,11 @@ function showTab(name) {
 function startPoll() {
     clearPoll();
     S.pollTimer = setInterval(async () => {
-        await loadNotifications();
+        await Promise.all([
+            loadNotifications(),
+            loadFriends(),
+            loadConversations(),
+        ]);
         if (S.convId && !S.editingMsgId) await loadMessages();
     }, 3000);
 }
