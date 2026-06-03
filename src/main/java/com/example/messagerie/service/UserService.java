@@ -20,6 +20,11 @@ public class UserService {
 
     @Transactional
     public User create(String name, String username, String rawPassword) {
+        return create(name, username, rawPassword, com.example.messagerie.model.Role.USER);
+    }
+
+    @Transactional
+    public User create(String name, String username, String rawPassword, com.example.messagerie.model.Role role) {
         if (name == null || name.isBlank()) throw new IllegalArgumentException("Le nom d'affichage est requis");
         if (username == null || username.isBlank()) throw new IllegalArgumentException("Le nom d'utilisateur est requis");
         if (rawPassword == null || rawPassword.length() < 6) throw new IllegalArgumentException("Le mot de passe doit contenir au moins 6 caractères");
@@ -29,6 +34,7 @@ public class UserService {
         u.setName(name);
         u.setUsername(username);
         u.setPasswordHash(passwordEncoder.encode(rawPassword));
+        u.setRole(role);
         return userRepository.save(u);
     }
 

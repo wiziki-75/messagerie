@@ -3,6 +3,7 @@ package com.example.messagerie.config;
 import com.example.messagerie.model.*;
 import com.example.messagerie.repository.*;
 import com.example.messagerie.service.*;
+import com.example.messagerie.model.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -23,6 +24,7 @@ public class DataInitializer {
     ) {
         return args -> {
             // ── Utilisateurs ──────────────────────────────────────────────────
+            userService.create("Admin",   "admin",   "admin123",   Role.ADMIN);
             User alice   = userService.create("Alice",   "alice",   "password123");
             User bob     = userService.create("Bob",     "bob",     "password123");
             User charlie = userService.create("Charlie", "charlie", "password123");

@@ -20,6 +20,7 @@ import java.util.UUID;
 @Service
 public class FileService {
     private static final Logger log = LoggerFactory.getLogger(FileService.class);
+    private static final Logger activityLog = LoggerFactory.getLogger("file.activity");
 
     private final FileAttachmentRepository fileRepo;
     private final NotificationService notificationService;
@@ -54,7 +55,7 @@ public class FileService {
         att.setSize(file.getSize());
         FileAttachment saved = fileRepo.save(att);
 
-        log.info("[ADMIN] Fichier envoyé: conv={}, from={}, name={}, size={}", conv.getId(), sender.getId(), original, file.getSize());
+        activityLog.info("USER: {} (id={}) | CONV: #{} | ACTION: fichier envoyé", sender.getName(), sender.getId(), conv.getId());
         notificationService.notify(recipient, NotificationType.FILE_RECEIVED, saved.getId(), "Nouveau fichier: " + original);
         return saved;
     }
@@ -63,6 +64,7 @@ public class FileService {
     public FileAttachment delete(FileAttachment att, User recipient) {
         att.setDeleted(true);
         FileAttachment saved = fileRepo.save(att);
+        activityLog.info("USER: {} (id={}) | FILE: #{} | ACTION: fichier supprimé", att.getSender().getName(), att.getSender().getId(), saved.getId());
         notificationService.notify(recipient, NotificationType.FILE_DELETED, saved.getId(), "Fichier supprimé");
         return saved;
     }

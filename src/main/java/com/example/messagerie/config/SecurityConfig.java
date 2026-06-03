@@ -26,6 +26,7 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/h2-console/**", "/error", "/api/auth/register").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
             )
@@ -46,7 +47,7 @@ public class SecurityConfig {
             UserDetails details = org.springframework.security.core.userdetails.User
                     .withUsername(u.getUsername())
                     .password(u.getPasswordHash())
-                    .roles("USER")
+                    .roles(u.getRole().name())
                     .build();
             return details;
         };

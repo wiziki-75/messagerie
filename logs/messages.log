@@ -1,0 +1,17 @@
+
+2026-06-03 14:32:04 | USER: Alice (id=2) | CONV: #1 | ACTION: message envoyé
+2026-06-03 14:45:01 | USER: Alice (id=2) | CONV: #1 | ACTION: message envoyé
+2026-06-03 14:45:01 | USER: Bob (id=3) | CONV: #1 | ACTION: message envoyé
+2026-06-03 14:45:01 | USER: Alice (id=2) | CONV: #1 | ACTION: message envoyé
+2026-06-03 14:45:01 | USER: Bob (id=3) | CONV: #1 | ACTION: message envoyé
+2026-06-03 14:45:01 | USER: Charlie (id=4) | CONV: #2 | ACTION: message envoyé
+2026-06-03 14:45:01 | USER: Alice (id=2) | CONV: #2 | ACTION: message envoyé
+2026-06-03 14:45:01 | USER: Bob (id=3) | CONV: #3 | ACTION: message envoyé
+2026-06-03 14:45:26 | USER: Alice (id=2) | CONV: #1 | ACTION: message envoyé
+2026-06-03 14:54:32 | USER: Alice (id=2) | CONV: #1 | ACTION: message envoyé
+2026-06-03 14:54:32 | USER: Bob (id=3) | CONV: #1 | ACTION: message envoyé
+2026-06-03 14:54:32 | USER: Alice (id=2) | CONV: #1 | ACTION: message envoyé
+2026-06-03 14:54:32 | USER: Bob (id=3) | CONV: #1 | ACTION: message envoyé
+2026-06-03 14:54:32 | USER: Charlie (id=4) | CONV: #2 | ACTION: message envoyé
+2026-06-03 14:54:32 | USER: Alice (id=2) | CONV: #2 | ACTION: message envoyé
+2026-06-03 14:54:32 | USER: Bob (id=3) | CONV: #3 | ACTION: message envoyé

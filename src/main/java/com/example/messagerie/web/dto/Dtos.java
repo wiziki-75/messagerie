@@ -15,5 +15,8 @@ public class Dtos {
 
     public record UploadFileResponse(Long id, String originalName, long size) {}
 
+    public record CodeResponse(String code) {}
+    public record UseCodeRequest(String code) {}
+
     public record ErrorResponse(String error, String message) {}
 }

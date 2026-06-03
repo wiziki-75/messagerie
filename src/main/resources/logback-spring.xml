@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <!-- Log des messages envoyés -->
+    <appender name="MESSAGE_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/messages.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/messages.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} | %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Log des fichiers envoyés -->
+    <appender name="FILE_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/files.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/files.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} | %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <logger name="message.activity" level="INFO" additivity="false">
+        <appender-ref ref="MESSAGE_LOG"/>
+    </logger>
+
+    <logger name="file.activity" level="INFO" additivity="false">
+        <appender-ref ref="FILE_LOG"/>
+    </logger>
+</configuration>

@@ -13,6 +13,7 @@ import java.util.List;
 @Service
 public class MessageService {
     private static final Logger log = LoggerFactory.getLogger(MessageService.class);
+    private static final Logger activityLog = LoggerFactory.getLogger("message.activity");
 
     private final MessageRepository messageRepository;
     private final NotificationService notificationService;
@@ -29,9 +30,7 @@ public class MessageService {
         m.setSender(sender);
         m.setContent(content);
         Message saved = messageRepository.save(m);
-        // admin log
-        log.info("[ADMIN] Message envoyé: conv={}, from={}, contentLength={}", conv.getId(), sender.getId(), content == null ? 0 : content.length());
-        // notification to recipient
+        activityLog.info("USER: {} (id={}) | CONV: #{} | ACTION: message envoyé", sender.getName(), sender.getId(), conv.getId());
         notificationService.notify(recipient, NotificationType.MESSAGE_RECEIVED, saved.getId(), "Nouveau message de " + sender.getName());
         return saved;
     }
@@ -42,6 +41,7 @@ public class MessageService {
         message.setEdited(true);
         message.setUpdatedAt(LocalDateTime.now());
         Message saved = messageRepository.save(message);
+        activityLog.info("USER: {} (id={}) | MSG: #{} | ACTION: message modifié", message.getSender().getName(), message.getSender().getId(), saved.getId());
         notificationService.notify(recipient, NotificationType.MESSAGE_EDITED, saved.getId(), "Message édité");
         return saved;
     }
@@ -51,6 +51,7 @@ public class MessageService {
         message.setDeleted(true);
         message.setUpdatedAt(LocalDateTime.now());
         Message saved = messageRepository.save(message);
+        activityLog.info("USER: {} (id={}) | MSG: #{} | ACTION: message supprimé", message.getSender().getName(), message.getSender().getId(), saved.getId());
         notificationService.notify(recipient, NotificationType.MESSAGE_DELETED, saved.getId(), "Message supprimé");
         return saved;
     }
