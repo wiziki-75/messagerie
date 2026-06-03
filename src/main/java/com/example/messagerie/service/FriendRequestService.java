@@ -76,6 +76,11 @@ public class FriendRequestService {
     }
 
     @Transactional(readOnly = true)
+    public List<Friendship> listSent(User fromUser) {
+        return friendshipRepository.findByFromUserAndStatus(fromUser, FriendshipStatus.PENDING);
+    }
+
+    @Transactional(readOnly = true)
     public List<Friendship> listFriends(User user) {
         return friendshipRepository.findAcceptedFriendships(user);
     }
