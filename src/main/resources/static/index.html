@@ -52,7 +52,7 @@
 
         /* ── Tabs ──────────────────────────────────────────────────── */
         #tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: none; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: none; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; justify-content: center; gap: 4px; }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
         #tab-content { flex: 1; overflow-y: auto; }
         .tab-pane { display: none; padding: 8px; }
@@ -104,7 +104,7 @@
         .msg:hover .msg-actions { display: flex; }
         .edit-input { padding: 6px 10px; border: 1px solid var(--primary); border-radius: 6px; font-size: 14px; margin-top: 4px; width: 260px; }
 
-        /* ── File bubble (inline dans le chat) ────────────────────── */
+        /* ── File bubble ───────────────────────────────────────────── */
         .file-bubble { display: flex; align-items: center; gap: 10px; min-width: 200px; max-width: 280px; }
         .file-bubble-icon { font-size: 28px; flex-shrink: 0; }
         .file-bubble-info { flex: 1; min-width: 0; }
@@ -137,6 +137,18 @@
         .notif-time    { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
         #notif-footer  { padding: 10px 16px; border-top: 1px solid var(--border); }
 
+        /* ── Unread badge ──────────────────────────────────────────── */
+        .unread-badge { background: #ef4444; color: white; border-radius: 10px; padding: 1px 6px; font-size: 11px; font-weight: 700; min-width: 18px; text-align: center; flex-shrink: 0; }
+        .tab-pending-badge { background: #ef4444; color: white; border-radius: 10px; padding: 0 5px; font-size: 10px; font-weight: 700; line-height: 16px; height: 16px; display: inline-block; }
+
+        /* ── Group modal ───────────────────────────────────────────── */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; display: flex; align-items: center; justify-content: center; }
+        .modal-card { background: white; border-radius: 16px; padding: 24px; width: 380px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+        .modal-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+        .member-checkbox-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; cursor: pointer; border-radius: 6px; }
+        .member-checkbox-item:hover { background: var(--bg); }
+        .member-checkbox-item input { width: 16px; height: 16px; cursor: pointer; }
+
         /* ── Toast ─────────────────────────────────────────────────── */
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; z-index: 9999; animation: fadeIn .2s ease; pointer-events: none; }
         .toast-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
@@ -156,8 +168,6 @@
     <div class="login-card">
         <h1>💬 Messagerie</h1>
         <p class="subtitle">Connectez-vous pour commencer</p>
-
-        <!-- Login form -->
         <div id="login-form">
             <div class="form-group">
                 <label>Nom d'utilisateur</label>
@@ -171,8 +181,6 @@
             <button class="btn-full btn-full-primary" onclick="login()">Se connecter</button>
             <div class="login-switch">Pas encore de compte ? <a onclick="showRegister()">Créer un compte</a></div>
         </div>
-
-        <!-- Register form -->
         <div id="register-form" style="display:none">
             <div class="form-group">
                 <label>Nom d'affichage</label>
@@ -190,11 +198,29 @@
             <button class="btn-full btn-full-primary" onclick="register()">Créer mon compte</button>
             <div class="login-switch">Déjà un compte ? <a onclick="showLogin()">Se connecter</a></div>
         </div>
-
         <div class="login-hint">
             <strong>🧪 Comptes de test disponibles</strong>
             alice / bob / charlie / diana / eve<br>
             Mot de passe : <strong>password123</strong>
+        </div>
+    </div>
+</div>
+
+<!-- ── Group creation modal ───────────────────────────────────────────────── -->
+<div id="group-modal" class="modal-backdrop" style="display:none" onclick="if(event.target===this)hideGroupModal()">
+    <div class="modal-card">
+        <h3>👥 Créer un groupe</h3>
+        <div class="form-group">
+            <label>Nom du groupe</label>
+            <input type="text" id="group-name-input" placeholder="ex: Groupe Projet" onkeydown="if(event.key==='Enter') createGroup()">
+        </div>
+        <div class="form-group" style="margin-top:12px">
+            <label style="margin-bottom:8px;display:block">Membres à ajouter</label>
+            <div id="group-member-checkboxes" style="border:1px solid var(--border);border-radius:6px;max-height:220px;overflow-y:auto"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+            <button class="btn btn-primary" style="flex:1" onclick="createGroup()">Créer le groupe</button>
+            <button class="btn btn-ghost" style="flex:1" onclick="hideGroupModal()">Annuler</button>
         </div>
     </div>
 </div>
@@ -222,8 +248,8 @@
         </div>
 
         <div id="tabs">
-            <button class="tab-btn active" onclick="showTab('friends')">👥 Amis</button>
-            <button class="tab-btn" onclick="showTab('convs')">💬 Discussions</button>
+            <button class="tab-btn active" id="tab-btn-friends" onclick="showTab('friends')">👥 Amis</button>
+            <button class="tab-btn" id="tab-btn-convs" onclick="showTab('convs')">💬 Discussions</button>
         </div>
 
         <div id="tab-content">
@@ -254,7 +280,10 @@
             </div>
 
             <div id="tab-convs" class="tab-pane">
-                <div class="section-title">Discussions</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px 4px">
+                    <div class="section-title" style="padding:0">Discussions</div>
+                    <button class="btn btn-primary btn-sm" onclick="showGroupModal()">+ Groupe</button>
+                </div>
                 <div id="conv-list"><div class="empty">Aucune discussion</div></div>
             </div>
         </div>
@@ -280,7 +309,7 @@
             <div id="messages-container"></div>
 
             <div id="input-area">
-                <label class="upload-label" title="Envoyer un fichier">
+                <label class="upload-label" title="Envoyer un fichier" id="upload-label">
                     📎
                     <input type="file" id="file-input" style="display:none" onchange="uploadFile(this)">
                 </label>
@@ -290,7 +319,6 @@
         </div>
     </div>
 </div>
-
 
 <div id="notif-overlay">
     <div id="notif-overlay-header">
@@ -305,7 +333,12 @@
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
-const S = { user: null, auth: null, users: [], friends: [], pendingReceived: [], pendingSent: [], conversations: [], convId: null, convOther: null, pollTimer: null, editingMsgId: null };
+const S = {
+    user: null, auth: null, users: [], friends: [], pendingReceived: [], pendingSent: [],
+    conversations: [], groupConversations: [],
+    convId: null, convType: null,   // convType: 'private' | 'group'
+    pollTimer: null, editingMsgId: null
+};
 
 // ── API helpers ───────────────────────────────────────────────────────────────
 async function api(method, path, body, noAuth = false) {
@@ -375,13 +408,17 @@ async function onLoggedIn() {
     document.getElementById('user-info-name').textContent = S.user.name;
     document.getElementById('user-info-username').textContent = `@${S.user.username}`;
     document.getElementById('user-avatar').textContent = S.user.name.charAt(0).toUpperCase();
-    await Promise.all([loadUsers(), loadFriends(), loadConversations(), loadNotifications()]);
+    await Promise.all([loadUsers(), loadFriends(), loadConversations(), loadGroupConversations(), loadNotifications()]);
     startPoll();
 }
 
 function logout() {
     clearPoll();
-    S.user = null; S.auth = null; S.convId = null;
+    S.user = null; S.auth = null; S.convId = null; S.convType = null;
+    S.conversations = []; S.groupConversations = [];
+    // Effacer le code d'invitation pour que le prochain utilisateur ne le voie pas
+    document.getElementById('invite-code-display').textContent = '';
+    document.getElementById('invite-code-box').style.display = 'none';
     document.getElementById('login-screen').style.display = '';
     document.getElementById('login-password').value = '';
     document.getElementById('login-error').textContent = '';
@@ -394,7 +431,6 @@ function logout() {
 // ── Users ─────────────────────────────────────────────────────────────────────
 async function loadUsers() {
     S.users = await GET('/api/users').catch(() => []);
-    renderAddFriendSelect();
 }
 
 // ── Friends ───────────────────────────────────────────────────────────────────
@@ -411,6 +447,13 @@ async function loadFriends() {
 function otherUser(f) { return f.fromUser.id === S.user.id ? f.toUser : f.fromUser; }
 
 function renderFriends() {
+    // Badge sur l'onglet Amis si des demandes sont en attente
+    const pendingCount = S.pendingReceived.length;
+    const friendsTabBtn = document.getElementById('tab-btn-friends');
+    friendsTabBtn.innerHTML = pendingCount > 0
+        ? `👥 Amis <span class="tab-pending-badge">${pendingCount}</span>`
+        : '👥 Amis';
+
     document.getElementById('friends-list').innerHTML = S.friends.length
         ? S.friends.map(f => { const u = otherUser(f); return `
             <div class="list-item" onclick="openConvWith(${u.id})">
@@ -439,21 +482,6 @@ function renderFriends() {
                 </div>
             </div>`).join('')
         : '<div class="empty">Aucune demande envoyée</div>';
-}
-
-function renderAddFriendSelect() {
-    const sel = document.getElementById('add-friend-select');
-    sel.innerHTML = '<option value="">Choisir…</option>';
-    if (!S.user) return;
-    const knownIds = new Set([
-        S.user.id,
-        ...S.friends.map(f => otherUser(f).id),
-        ...S.pendingReceived.map(f => f.fromUser.id),
-        ...S.pendingSent.map(f => f.toUser.id)
-    ]);
-    S.users.filter(u => !knownIds.has(u.id)).forEach(u => {
-        const o = document.createElement('option'); o.value = u.id; o.textContent = u.name; sel.appendChild(o);
-    });
 }
 
 async function generateCode() {
@@ -503,12 +531,37 @@ async function loadConversations() {
     renderConversations();
 }
 
+async function loadGroupConversations() {
+    if (!S.user) return;
+    S.groupConversations = await GET(`/api/group-conversations/user/${S.user.id}`).catch(() => []);
+    renderConversations();
+}
+
 function renderConversations() {
-    document.getElementById('conv-list').innerHTML = S.conversations.length
-        ? S.conversations.map(c => {
-            const other = c.userA.id === S.user.id ? c.userB : c.userA;
-            return `<div class="list-item ${c.id === S.convId ? 'active' : ''}" onclick="openConversation(${c.id},${c.userA.id},${c.userB.id})">
-                <div class="list-item-name">${escHtml(other.name)}</div>
+    const privateItems = S.conversations.map(c => ({
+        type: 'private', id: c.id,
+        name: c.userA.id === S.user.id ? c.userB.name : c.userA.name,
+        unreadCount: c.unreadCount || 0,
+        userAId: c.userA.id, userBId: c.userB.id
+    }));
+    const groupItems = S.groupConversations.map(g => ({
+        type: 'group', id: g.id,
+        name: g.name,
+        unreadCount: g.unreadCount || 0
+    }));
+    const all = [...privateItems, ...groupItems];
+
+    document.getElementById('conv-list').innerHTML = all.length
+        ? all.map(c => {
+            const isActive = S.convType === c.type && S.convId === c.id;
+            const badge = c.unreadCount > 0 ? `<span class="unread-badge">${c.unreadCount}</span>` : '';
+            const icon = c.type === 'group' ? '👥 ' : '';
+            const onclick = c.type === 'group'
+                ? `openGroupConversation(${c.id})`
+                : `openConversation(${c.id},${c.userAId},${c.userBId})`;
+            return `<div class="list-item ${isActive ? 'active' : ''}" onclick="${onclick}">
+                <div class="list-item-name">${icon}${escHtml(c.name)}</div>
+                ${badge}
             </div>`;
         }).join('')
         : '<div class="empty">Aucune discussion</div>';
@@ -525,47 +578,123 @@ async function openConvWith(userId) {
 
 async function openConversation(id, userAId, userBId) {
     S.convId = id;
+    S.convType = 'private';
     const otherId = userAId === S.user.id ? userBId : userAId;
-    S.convOther = S.users.find(u => u.id === otherId) || { id: otherId, name: '...' };
+    const other = S.users.find(u => u.id === otherId) || { id: otherId, name: '...' };
     document.getElementById('chat-placeholder').style.display = 'none';
     document.getElementById('chat-view').style.display = 'flex';
-    document.getElementById('chat-title').textContent = S.convOther.name;
-    document.getElementById('chat-sub').textContent = `Conversation #${id}`;
+    document.getElementById('upload-label').style.display = '';
+    document.getElementById('chat-title').textContent = other.name;
+    document.getElementById('chat-sub').textContent = `Conversation privée`;
     renderConversations();
     await loadMessages();
+    POST(`/api/conversations/${id}/mark-read`).catch(() => {});
 }
 
-// ── Messages + Fichiers (fusionnés dans le chat) ───────────────────────────────
+async function openGroupConversation(id) {
+    S.convId = id;
+    S.convType = 'group';
+    const group = S.groupConversations.find(g => g.id === id);
+    document.getElementById('chat-placeholder').style.display = 'none';
+    document.getElementById('chat-view').style.display = 'flex';
+    document.getElementById('upload-label').style.display = 'none';  // pas de fichiers en groupe pour l'instant
+    document.getElementById('chat-title').textContent = '👥 ' + (group?.name || '...');
+    const n = group?.members?.length || 0;
+    document.getElementById('chat-sub').textContent = `${n} membre${n > 1 ? 's' : ''}`;
+    renderConversations();
+    await loadMessages();
+    POST(`/api/group-conversations/${id}/mark-read`).catch(() => {});
+}
+
+// ── Group creation modal ───────────────────────────────────────────────────────
+function showGroupModal() {
+    if (!S.friends.length) { toast('Ajoutez des amis d\'abord !', 'info'); return; }
+    document.getElementById('group-name-input').value = '';
+    const container = document.getElementById('group-member-checkboxes');
+    container.innerHTML = S.friends.map(f => {
+        const u = otherUser(f);
+        return `<label class="member-checkbox-item">
+            <input type="checkbox" value="${u.id}"> ${escHtml(u.name)}
+        </label>`;
+    }).join('');
+    document.getElementById('group-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('group-name-input').focus(), 50);
+}
+
+function hideGroupModal() {
+    document.getElementById('group-modal').style.display = 'none';
+}
+
+async function createGroup() {
+    const name = document.getElementById('group-name-input').value.trim();
+    if (!name) { toast('Entrez un nom de groupe', 'error'); return; }
+    const checked = [...document.querySelectorAll('#group-member-checkboxes input:checked')].map(cb => parseInt(cb.value));
+    if (checked.length === 0) { toast('Sélectionnez au moins un membre', 'error'); return; }
+    try {
+        const group = await POST('/api/group-conversations', { creatorId: S.user.id, name, memberIds: checked });
+        hideGroupModal();
+        await loadGroupConversations();
+        toast('Groupe créé !', 'success');
+        showTab('convs');
+        await openGroupConversation(group.id);
+    } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── Messages (privées + groupes) ──────────────────────────────────────────────
 async function loadMessages() {
     if (!S.convId) return;
+    if (S.convType === 'group') {
+        await loadGroupMessages();
+    } else {
+        await loadPrivateMessages();
+    }
+}
+
+async function loadPrivateMessages() {
     const [msgs, files] = await Promise.all([
         GET(`/api/messages/conversation/${S.convId}`).catch(() => []),
         GET(`/api/files/conversation/${S.convId}`).catch(() => []),
     ]);
     const items = [
-        ...msgs.map(m  => ({ ...m,  _type: 'message' })),
-        ...files.map(f => ({ ...f,  _type: 'file'    })),
+        ...msgs.map(m  => ({ ...m, _type: 'message' })),
+        ...files.map(f => ({ ...f, _type: 'file'    })),
     ].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    renderMessages(items);
+    renderMessages(items, false);
 }
 
-function renderMessages(items) {
+async function loadGroupMessages() {
+    const msgs = await GET(`/api/group-conversations/${S.convId}/messages`).catch(() => []);
+    renderMessages(msgs.map(m => ({ ...m, _type: 'message' })), true);
+}
+
+function renderMessages(items, isGroup) {
     const el = document.getElementById('messages-container');
     if (!items.length) { el.innerHTML = '<div class="empty" style="margin-top:40px">Aucun message. Commencez !</div>'; return; }
-    el.innerHTML = items.map(item => item._type === 'file' ? renderFileBubble(item) : renderMsgBubble(item)).join('');
+    el.innerHTML = items.map(item => item._type === 'file' ? renderFileBubble(item) : renderMsgBubble(item, isGroup)).join('');
     el.scrollTop = el.scrollHeight;
 }
 
-function renderMsgBubble(m) {
+function renderMsgBubble(m, isGroup) {
     const own = m.sender.id === S.user.id;
     let content = escHtml(m.content || '');
     let bCls = 'msg-bubble';
     if (m.deleted) { content = '🗑 Message supprimé'; bCls += ' deleted'; }
     const edited = m.edited && !m.deleted ? ' <span class="msg-edited">(modifié)</span>' : '';
-    const actions = own && !m.deleted ? `<div class="msg-actions">
-        <button class="btn btn-ghost btn-sm" onclick="startEdit(${m.id})">✏️ Modifier</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteMsg(${m.id})">🗑 Supprimer</button>
-    </div>` : '';
+
+    let actions = '';
+    if (own && !m.deleted) {
+        if (isGroup) {
+            actions = `<div class="msg-actions">
+                <button class="btn btn-danger btn-sm" onclick="deleteGroupMsg(${m.id})">🗑 Supprimer</button>
+            </div>`;
+        } else {
+            actions = `<div class="msg-actions">
+                <button class="btn btn-ghost btn-sm" onclick="startEdit(${m.id})">✏️ Modifier</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteMsg(${m.id})">🗑 Supprimer</button>
+            </div>`;
+        }
+    }
+
     return `<div class="msg ${own ? 'own' : 'other'}" id="msg-${m.id}" data-content="${escHtml(m.content || '')}">
         ${!own ? `<div class="msg-sender">${escHtml(m.sender.name)}</div>` : ''}
         <div class="${bCls}" id="bubble-${m.id}">${content}${edited}</div>
@@ -607,8 +736,15 @@ async function sendMessage() {
     const inp = document.getElementById('message-input');
     const content = inp.value.trim();
     if (!content || !S.convId) return;
-    try { await POST('/api/messages/send', { conversationId: S.convId, senderId: S.user.id, content }); inp.value = ''; await loadMessages(); }
-    catch(e) { toast(e.message, 'error'); }
+    try {
+        if (S.convType === 'group') {
+            await POST(`/api/group-conversations/${S.convId}/messages`, { senderId: S.user.id, content });
+        } else {
+            await POST('/api/messages/send', { conversationId: S.convId, senderId: S.user.id, content });
+        }
+        inp.value = '';
+        await loadMessages();
+    } catch(e) { toast(e.message, 'error'); }
 }
 
 function startEdit(id) {
@@ -638,9 +774,15 @@ async function deleteMsg(id) {
     catch(e) { toast(e.message, 'error'); }
 }
 
+async function deleteGroupMsg(id) {
+    if (!confirm('Supprimer ce message ?')) return;
+    try { await DEL(`/api/group-conversations/${S.convId}/messages/${id}`); await loadMessages(); toast('Message supprimé', 'info'); }
+    catch(e) { toast(e.message, 'error'); }
+}
+
 // ── Files ─────────────────────────────────────────────────────────────────────
 async function uploadFile(input) {
-    if (!S.convId || !input.files.length) return;
+    if (!S.convId || !input.files.length || S.convType === 'group') return;
     const form = new FormData();
     form.append('file', input.files[0]);
     form.append('conversationId', S.convId);
@@ -679,6 +821,7 @@ const NOTIF_LABELS = {
     MESSAGE_DELETED: '🗑 Message supprimé',
     FILE_RECEIVED: '📎 Nouveau fichier',
     FILE_DELETED: '🗑 Fichier supprimé',
+    GROUP_MESSAGE_RECEIVED: '👥 Nouveau message de groupe',
 };
 
 async function loadNotifications() {
@@ -721,12 +864,12 @@ function startPoll() {
             loadNotifications(),
             loadFriends(),
             loadConversations(),
+            loadGroupConversations(),
         ]);
         if (S.convId && !S.editingMsgId) await loadMessages();
     }, 3000);
 }
 function clearPoll() { if (S.pollTimer) { clearInterval(S.pollTimer); S.pollTimer = null; } }
-
 </script>
 </body>
 </html>

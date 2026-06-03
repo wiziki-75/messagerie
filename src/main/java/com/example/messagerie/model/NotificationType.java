@@ -8,5 +8,6 @@ public enum NotificationType {
     MESSAGE_EDITED,
     MESSAGE_DELETED,
     FILE_RECEIVED,
-    FILE_DELETED
+    FILE_DELETED,
+    GROUP_MESSAGE_RECEIVED
 }

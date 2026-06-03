@@ -5,6 +5,7 @@ import com.example.messagerie.model.User;
 import com.example.messagerie.service.ConversationService;
 import com.example.messagerie.service.UserService;
 import com.example.messagerie.web.dto.Dtos;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,9 +22,13 @@ public class ConversationController {
     }
 
     @GetMapping("/user/{userId}")
-    public List<Conversation> listFor(@PathVariable Long userId) {
+    public List<Dtos.ConversationWithUnread> listFor(@PathVariable Long userId) {
         User u = userService.require(userId);
-        return conversationService.listFor(u);
+        return conversationService.listFor(u).stream()
+                .map(c -> new Dtos.ConversationWithUnread(
+                        c.getId(), c.getUserA(), c.getUserB(), c.getCreatedAt(),
+                        conversationService.unreadCount(c, u)))
+                .toList();
     }
 
     @PostMapping("/get-or-create")
@@ -31,5 +36,12 @@ public class ConversationController {
         User a = userService.require(req.userAId());
         User b = userService.require(req.userBId());
         return conversationService.getOrCreate(a, b);
+    }
+
+    @PostMapping("/{id}/mark-read")
+    public void markRead(@PathVariable Long id, Authentication auth) {
+        Conversation conv = conversationService.require(id);
+        User user = userService.requireByUsername(auth.getName());
+        conversationService.markRead(conv, user);
     }
 }

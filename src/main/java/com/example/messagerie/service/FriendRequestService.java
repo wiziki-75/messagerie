@@ -11,14 +11,11 @@ import java.util.List;
 @Service
 public class FriendRequestService {
     private final FriendshipRepository friendshipRepository;
-    private final ConversationService conversationService;
     private final NotificationService notificationService;
 
     public FriendRequestService(FriendshipRepository friendshipRepository,
-                                ConversationService conversationService,
                                 NotificationService notificationService) {
         this.friendshipRepository = friendshipRepository;
-        this.conversationService = conversationService;
         this.notificationService = notificationService;
     }
 
@@ -47,7 +44,6 @@ public class FriendRequestService {
         req.setStatus(FriendshipStatus.ACCEPTED);
         req.setUpdatedAt(LocalDateTime.now());
         Friendship saved = friendshipRepository.save(req);
-        conversationService.getOrCreate(req.getFromUser(), req.getToUser());
         notificationService.notify(req.getFromUser(), NotificationType.FRIEND_REQUEST_ACCEPTED, saved.getId(),
                 req.getToUser().getName() + " a accepté votre demande");
         return saved;
