@@ -44,6 +44,12 @@ public class FriendRequestController {
         return friendRequestService.decline(f);
     }
 
+    @PatchMapping("/{id}/cancel")
+    public Friendship cancelPatch(@PathVariable Long id) {
+        Friendship f = require(id);
+        return friendRequestService.cancel(f);
+    }
+
     @DeleteMapping("/{id}")
     public Friendship cancel(@PathVariable Long id) {
         Friendship f = require(id);
@@ -54,6 +60,12 @@ public class FriendRequestController {
     public List<Friendship> listReceived(@PathVariable Long userId) {
         User to = userService.require(userId);
         return friendRequestService.listReceived(to);
+    }
+
+    @GetMapping("/sent/{userId}")
+    public List<Friendship> listSent(@PathVariable Long userId) {
+        User from = userService.require(userId);
+        return friendRequestService.listSent(from);
     }
 
     @GetMapping("/friends/{userId}")
